@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="details_screen_name">Movie Details</string>
+    <string name="sort_order_popular">Sort by most popular</string>
+    <string name="sort_order_top_rated">Sort by top rated</string>
+    <string name="no_details">Not found</string>
+
+    <string name="tab_popular">Popular</string>
+    <string name="tab_top">Top rated</string>
+    <string name="tab_favorite">Favorite</string>
+
+    <string name="caption_trailers">Trailers</string>
+    <string name="caption_reviews">Reviews</string>
+
+    <string name="favorite_add">mark as favorite</string>
+    <string name="favorite_delete">delete from favorites</string>
+
+</resources>

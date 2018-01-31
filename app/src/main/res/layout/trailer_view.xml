@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@drawable/ic_play_arrow"
+        android:layout_margin="8dp"/>
+
+    <TextView
+        android:id="@+id/trailer_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Official Trailer"
+        android:layout_gravity="center_vertical"
+        />
+
+</LinearLayout>
