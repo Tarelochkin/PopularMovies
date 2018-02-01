@@ -88,14 +88,12 @@ public class SyncMovieTask {
             Uri newItemUri = context.getContentResolver().insert(PopularMoviesContract.FULL_CONTENT_URI, values);
             id = ContentUris.parseId(newItemUri);
         } else {
-            Log.d(LOG_TAG, "MOVIE ID IS " + movieId);
-            String selection = MovieEntry.COLUMN_TMDID + "=?";
-            String[] selectionArgs = new String[]{movieId + ""};
+            Uri uri = ContentUris.withAppendedId(PopularMoviesContract.FULL_CONTENT_URI, movieId);
             int moviesUpdated = context.getContentResolver().update(
-                    PopularMoviesContract.FULL_CONTENT_URI,
+                    uri,
                     values,
-                    selection,
-                    selectionArgs
+                    null,
+                    null
             );
             Log.d(LOG_TAG, "UPDATED " + moviesUpdated + " MOVIE(S)");
         }

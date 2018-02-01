@@ -40,8 +40,6 @@ public class DetailsActivity extends AppCompatActivity {
     public static final String REVIEW_AUTHOR_SEPARATOR = "_review_author_";
     public static final String REVIEW_BODY_SEPARATOR = "_review_body_";
 
-    String mSelection;
-    String[] mSelectionArgs;
     private ActivityDetailsBinding mBinding;
     private Movie mMovie;
     private int mMovieId;
@@ -52,6 +50,7 @@ public class DetailsActivity extends AppCompatActivity {
     private boolean needsNotifying;
     private boolean isUpdated;
     private File mDirectory;
+    private Uri mUri;
 
     @Override
     protected void onStop() {
@@ -73,9 +72,8 @@ public class DetailsActivity extends AppCompatActivity {
 
         if (mMovieId != 0) {
             mDirectory = getDir(Movie.IMAGE_DIR, MODE_PRIVATE);
+            mUri = ContentUris.withAppendedId(PopularMoviesContract.FULL_CONTENT_URI, mMovieId);
 
-            mSelection = MovieEntry.COLUMN_TMDID + "=?";
-            mSelectionArgs = new String[]{"" + mMovieId};
             if (movieIsInFavs()) {
                 getSupportLoaderManager().initLoader(LOADER_ID_LOCAL, null, new LocalLoaderCallbacks());
             } else {
@@ -92,10 +90,10 @@ public class DetailsActivity extends AppCompatActivity {
         String[] projection = new String[]{MovieEntry.COLUMN_TMDID};
 
         Cursor c = getContentResolver().query(
-                PopularMoviesContract.FULL_CONTENT_URI,
+                mUri,
                 projection,
-                mSelection,
-                mSelectionArgs,
+                null,
+                null,
                 null
         );
 
@@ -172,6 +170,7 @@ public class DetailsActivity extends AppCompatActivity {
         if (id > -1) {
             makeAvailableForDeletion(mBinding.favoriteButton);
             savePosterToFile();
+            UpToDateMovies.add(mMovieId);
         } else {
             Toast.makeText(this, "Failed to add to Favorites", Toast.LENGTH_SHORT).show();
         }
@@ -180,9 +179,9 @@ public class DetailsActivity extends AppCompatActivity {
 
     private void deleteMovie() {
         int deleted = getContentResolver().delete(
-                PopularMoviesContract.FULL_CONTENT_URI,
-                mSelection,
-                mSelectionArgs);
+                mUri,
+                null,
+                null);
         if (deleted > 0) {
             makeAvailableForFavorites(mBinding.favoriteButton);
             needsNotifying = true;
@@ -239,12 +238,16 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     private void updateFavorite() {
-        if (!isUpdated) {
+        if (!isUpdated && !UpToDateMovies.list.contains(mMovieId)) {
             Intent i = new Intent(this, UpdateMovieIntentService.class);
             i.putExtra(Intent.EXTRA_TEXT, mMovieId);
             startService(i);
 
             isUpdated = true;
+        } else if (isUpdated) {
+            Log.d(LOG_TAG, "ONLY 1 UPDATE ITERATION ALLOWED");
+        } else if (UpToDateMovies.list.contains(mMovieId)) {
+            Log.d(LOG_TAG, "ALREADY UPDATED DURING LIFECYCLE");
         }
     }
 
@@ -287,10 +290,10 @@ public class DetailsActivity extends AppCompatActivity {
 
             return new CursorLoader(
                     DetailsActivity.this,
-                    PopularMoviesContract.FULL_CONTENT_URI,
+                    mUri,
                     projection,
-                    mSelection,
-                    mSelectionArgs,
+                    null,
+                    null,
                     null
             );
         }
