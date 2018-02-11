@@ -26,16 +26,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     private final static String LOG_TAG = MovieAdapter.class.getSimpleName();
     private int viewHoldersCount;
 
-//    private OnPosterClickListener mListener;
+    private OnPosterClickListener mListener;
     private List<Movie> mMoviesList;
     private Context mContext;
     private static final float RATIO = 2.0f/3.0f;
     private boolean mFillFromDb;
 
-    public MovieAdapter() {
+    public MovieAdapter(OnPosterClickListener listener) {
         super();
         mMoviesList = new ArrayList<>();
-//        mListener = listener;
+        mListener = listener;
     }
 
     @Override
@@ -82,13 +82,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         return itemHeight;
     }
 
-    void setFilledFromDb(boolean filledFromDb) {
-        mFillFromDb = filledFromDb;
+    public interface OnPosterClickListener {
+        void onPosterClick(int movieId);
     }
-
-//    public interface OnPosterClickListener {
-//        void onPosterClick(String movieId);
-//    }
 
     class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -104,10 +100,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @Override
         public void onClick(View v) {
             int clickedMovieId = mMoviesList.get(getAdapterPosition()).getId();
-            Intent intent = new Intent(mContext, DetailsActivity.class);
-            intent.putExtra(Intent.EXTRA_TEXT, clickedMovieId);
-            if (mFillFromDb) intent.putExtra("FROM_DB", true);
-            mContext.startActivity(intent);
+            mListener.onPosterClick(clickedMovieId);
         }
     }
 }

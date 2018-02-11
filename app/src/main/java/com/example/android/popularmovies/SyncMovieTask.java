@@ -53,9 +53,9 @@ public class SyncMovieTask {
             for (int i = 0; i < trailersList.size(); i++) {
                 String[] currentTrailer = trailersList.get(i);
                 stringBuilder.append(currentTrailer[0])
-                        .append(DetailsActivity.YOUTUBE_KEY_SEPARATOR)
+                        .append(DetailFragment.YOUTUBE_KEY_SEPARATOR)
                         .append(currentTrailer[1])
-                        .append(DetailsActivity.TRAILER_NAME_SEPARATOR);
+                        .append(DetailFragment.TRAILER_NAME_SEPARATOR);
             }
             trailersString = stringBuilder.toString();
             stringBuilder.setLength(0);
@@ -65,9 +65,9 @@ public class SyncMovieTask {
             for (int i = 0; i < reviewsList.size(); i++) {
                 String[] currentReview = reviewsList.get(i);
                 stringBuilder.append(currentReview[0])
-                        .append(DetailsActivity.REVIEW_AUTHOR_SEPARATOR)
+                        .append(DetailFragment.REVIEW_AUTHOR_SEPARATOR)
                         .append(currentReview[1])
-                        .append(DetailsActivity.REVIEW_BODY_SEPARATOR);
+                        .append(DetailFragment.REVIEW_BODY_SEPARATOR);
             }
             reviewsString = stringBuilder.toString();
         }
@@ -80,6 +80,7 @@ public class SyncMovieTask {
         putStringIfNotEmpty(values, MovieEntry.COLUMN_SYNOPSIS, synopsis);
         putStringIfNotEmpty(values, MovieEntry.COLUMN_TRAILERS, trailersString);
         putStringIfNotEmpty(values, MovieEntry.COLUMN_REVIEWS, reviewsString);
+
         if (rating > 0) {
             values.put(MovieEntry.COLUMN_RATING, rating);
         }

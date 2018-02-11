@@ -113,7 +113,7 @@ public class Movie {
             return "file://" + jpg.getPath();
         } else {
             Uri.Builder builder = Uri.parse(BASE_POSTER_PATH).buildUpon()
-                    .appendPath(SIZE_W154)
+                    .appendPath(SIZE_W342)
                     .appendEncodedPath(mPosterPath);
 
             return builder.toString();

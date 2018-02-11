@@ -6,4 +6,6 @@
     <color name="movieTitleBg">#009688</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="textColorPrimaryOpacity70">#B3FFFFFF</color>
+    <color name="empty_view_text_color">#7d000000</color>
+    <color name="empty_view_bg_color">#e2e2e2</color>
 </resources>

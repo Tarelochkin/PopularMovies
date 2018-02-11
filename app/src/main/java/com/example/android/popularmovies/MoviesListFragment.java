@@ -2,6 +2,8 @@ package com.example.android.popularmovies;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -12,6 +14,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.android.popularmovies.data.PopularMoviesContract;
 import com.example.android.popularmovies.data.PopularMoviesContract.MovieEntry;
@@ -35,6 +40,15 @@ public class MoviesListFragment extends Fragment {
     private RecyclerView mPostersView;
     private MovieAdapter mAdapter;
     private FragmentActivity mActivity;
+    private View mEmptyView;
+    private ProgressBar mLoading;
+    private TextView mNoDataTextView;
+    private Button mTryAgainButton;
+    private int mLoaderId;
+
+    public MoviesListFragment() {
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,31 +63,51 @@ public class MoviesListFragment extends Fragment {
         mPostersView.setLayoutManager(layoutManager);
         mPostersView.setHasFixedSize(true);
 
-        mAdapter = new MovieAdapter();
+        mAdapter = new MovieAdapter((MovieAdapter.OnPosterClickListener) mActivity);
         mPostersView.setAdapter(mAdapter);
 
         Bundle bundle = getArguments();
-        int loaderId = bundle.getInt(SortingAdapter.POSITION_KEY);
+        mLoaderId = bundle.getInt(SortingAdapter.POSITION_KEY);
 
-        if (loaderId == LOADER_ID_FAVORITES) {
-            mActivity.getSupportLoaderManager().initLoader(
-                    loaderId,
-                    null,
-                    new LocalLoaderCallbacks());
-        } else {
-            mActivity.getSupportLoaderManager().initLoader(
-                    loaderId,
-                    null,
-                    new RemoteLoaderCallbacks());
-        }
+        mEmptyView = rootView.findViewById(R.id.master_empty_view);
+        mLoading = (ProgressBar) mEmptyView.findViewById(R.id.loading_spinner);
+        mNoDataTextView = (TextView) mEmptyView.findViewById(R.id.empty_view_text);
+        mTryAgainButton = (Button) mEmptyView.findViewById(R.id.failed_connection_button);
+
+
+
+        Log.d(LOG_TAG, "onCreateView LOADER ID = " + mLoaderId);
+
         return rootView;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d("MY_LOG", "ACTIVITY (RE)CREATED");
+
+        if (mLoaderId == LOADER_ID_FAVORITES) {
+            getLoaderManager().initLoader(
+                    mLoaderId,
+                    null,
+                    new LocalLoaderCallbacks());
+        } else {
+            getLoaderManager().initLoader(
+                    mLoaderId,
+                    null,
+                    new RemoteLoaderCallbacks());
+        }
+
+        super.onActivityCreated(savedInstanceState);
+    }
 
     class RemoteLoaderCallbacks implements LoaderManager.LoaderCallbacks<List<Movie>> {
         @Override
         public Loader<List<Movie>> onCreateLoader(int id, Bundle args) {
-            Log.d(LOG_TAG, "create list loader");
+            Log.d(LOG_TAG, "onCreateLoader LOADER ID = " + id);
+            mNoDataTextView.setVisibility(View.GONE);
+            mTryAgainButton.setVisibility(View.GONE);
+            mLoading.setVisibility(View.VISIBLE);
+
             String sortPath = TOKEN_POPULAR;
             if (id == LOADER_ID_TOP_RATED) sortPath = TOKEN_TOP_RATED;
 
@@ -81,11 +115,26 @@ public class MoviesListFragment extends Fragment {
         }
 
         @Override
-        public void onLoadFinished(Loader<List<Movie>> loader, List<Movie> data) {
-            Log.d(LOG_TAG, "posters count: " + data.size());
+        public void onLoadFinished(final Loader<List<Movie>> loader, List<Movie> data) {
+            Log.d(LOG_TAG, "onLoadFinished LOADER ID = " + loader.getId());
+            mLoading.setVisibility(View.GONE);
+
             if (data.size() > 0) {
-                mAdapter.setFilledFromDb(false);
+                mEmptyView.setVisibility(View.GONE);
                 mAdapter.setMoviesList(data);
+            } else {
+                Log.d(LOG_TAG, "REMOTE LOADER NO DATA");
+                String emptyData = getResources().getString(R.string.api_data_unavailable);
+                mEmptyView.setVisibility(View.VISIBLE);
+                mNoDataTextView.setVisibility(View.VISIBLE);
+                mNoDataTextView.setText(emptyData);
+                mTryAgainButton.setVisibility(View.VISIBLE);
+                mTryAgainButton.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        getLoaderManager().restartLoader(mLoaderId, null, new RemoteLoaderCallbacks());
+                    }
+                });
             }
         }
 
@@ -113,18 +162,26 @@ public class MoviesListFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-            Log.d(LOG_TAG, "cursor loader onLoadFinished");
-            if (cursor == null) return;
             List<Movie> movies = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                int idIndex = cursor.getColumnIndex(MovieEntry.COLUMN_TMDID);
-                int imageIndex = cursor.getColumnIndex(MovieEntry.COLUMN_IMAGE);
-                Movie movie = new Movie(cursor.getInt(idIndex),
-                        cursor.getString(imageIndex));
-                movies.add(movie);
+
+            if (cursor == null || cursor.getCount() < 1) {
+                Log.d("MY_LOG", "cursor loader onLoadFinished with empty cursor");
+                String emptyData = getResources().getString(R.string.favorites_empty);
+                mEmptyView.setVisibility(View.VISIBLE);
+                mNoDataTextView.setVisibility(View.VISIBLE);
+                mNoDataTextView.setText(emptyData);
+            } else {
+                Log.d("MY_LOG", "cursor loader onLoadFinished with valid data");
+                while (cursor.moveToNext()) {
+                    int idIndex = cursor.getColumnIndex(MovieEntry.COLUMN_TMDID);
+                    int imageIndex = cursor.getColumnIndex(MovieEntry.COLUMN_IMAGE);
+                    Movie movie = new Movie(cursor.getInt(idIndex),
+                            cursor.getString(imageIndex));
+                    movies.add(movie);
+                }
+                mEmptyView.setVisibility(View.GONE);
+                cursor.moveToPosition(-1);
             }
-            cursor.moveToPosition(-1);
-            mAdapter.setFilledFromDb(true);
             mAdapter.setMoviesList(movies);
         }
 

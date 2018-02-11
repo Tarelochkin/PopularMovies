@@ -8,7 +8,7 @@ import java.util.List;
  */
 
 public class UpToDateMovies {
-    static List<Integer> list;
+    private static List<Integer> list;
 
     static {
         list = new ArrayList<>();
@@ -18,5 +18,9 @@ public class UpToDateMovies {
         if (!list.contains(movieId)) {
             list.add(movieId);
         }
+    }
+
+    static boolean contains(int movieId) {
+        return list.contains(movieId);
     }
 }

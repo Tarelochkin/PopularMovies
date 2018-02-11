@@ -46,7 +46,6 @@ public class PopularMoviesProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor;
         int match = sUriMatcher.match(uri);
 
         switch (match) {
@@ -60,7 +59,7 @@ public class PopularMoviesProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unable to get data for " + uri);
         }
 
-        cursor = db.query(
+        Cursor cursor = db.query(
                 MovieEntry.TABLE_NAME,
                 projection,
                 selection,
@@ -109,6 +108,7 @@ public class PopularMoviesProvider extends ContentProvider {
             case MOVIE_ID:
                 selection = MovieEntry.COLUMN_TMDID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                getContext().getContentResolver().notifyChange(uri, null);
                 return db.delete(MovieEntry.TABLE_NAME, selection, selectionArgs);
             default: throw new IllegalArgumentException("Unable to delete row for movie #" + selectionArgs[0]);
         }
@@ -122,14 +122,14 @@ public class PopularMoviesProvider extends ContentProvider {
         int rowsUpdated;
 
         switch (match) {
-            case MOVIES:
-                rowsUpdated = db.update(
-                        MovieEntry.TABLE_NAME,
-                        values,
-                        selection,
-                        selectionArgs
-                );
-                break;
+//            case MOVIES:
+//                rowsUpdated = db.update(
+//                        MovieEntry.TABLE_NAME,
+//                        values,
+//                        selection,
+//                        selectionArgs
+//                );
+//                break;
             case MOVIE_ID:
                 selection = MovieEntry.COLUMN_TMDID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
@@ -145,16 +145,16 @@ public class PopularMoviesProvider extends ContentProvider {
                             PopularMoviesContract.FULL_CONTENT_URI,
                             null);
                 }
-                break;
+                return rowsUpdated;
 
             default: throw new IllegalArgumentException("Unable to update movie with id " + selectionArgs[0]);
         }
 
-        if (rowsUpdated > 0) {
-            getContext().getContentResolver().notifyChange(
-                    PopularMoviesContract.FULL_CONTENT_URI,
-                    null);
-        }
-        return rowsUpdated;
+//        if (rowsUpdated > 0) {
+//            getContext().getContentResolver().notifyChange(
+//                    PopularMoviesContract.FULL_CONTENT_URI,
+//                    null);
+//        }
+
     }
 }

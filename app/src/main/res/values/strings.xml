@@ -15,4 +15,9 @@
     <string name="favorite_add">mark as favorite</string>
     <string name="favorite_delete">delete from favorites</string>
 
+    <string name="blank_fragment">Choose a movie from the list on the left to see the details.</string>
+    <string name="api_data_unavailable">Failed to obtain data. Check your internet connection and</string>
+    <string name="failed_connection_button_text">Try again</string>
+    <string name="favorites_empty">Nothing here yet.</string>
+
 </resources>
